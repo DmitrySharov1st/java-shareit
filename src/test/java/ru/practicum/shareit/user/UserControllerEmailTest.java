@@ -55,7 +55,7 @@ class UserControllerEmailTest {
     }
 
     @Test
-    void createUser_DuplicateEmail_ReturnsConflict() throws Exception {
+    void shouldReturnConflictWhenDuplicateEmail() throws Exception {
         UserDto userDto1 = UserDto.builder()
                 .name("User One")
                 .email("test1@example.com") // Уникальный email для этого теста
@@ -81,7 +81,7 @@ class UserControllerEmailTest {
     }
 
     @Test
-    void updateUser_DuplicateEmail_ReturnsConflict() throws Exception {
+    void shouldReturnConflictWhenUpdateWithDuplicateEmail() throws Exception {
         // Создаем первого пользователя
         UserDto userDto1 = UserDto.builder()
                 .name("User One")
@@ -124,7 +124,7 @@ class UserControllerEmailTest {
     }
 
     @Test
-    void updateUser_SameEmailSameUser_ReturnsOk() throws Exception {
+    void shouldReturnOkWhenUpdateSameUserWithSameEmail() throws Exception {
         // Создаем пользователя
         UserDto userDto = UserDto.builder()
                 .name("User One")
@@ -153,7 +153,7 @@ class UserControllerEmailTest {
     }
 
     @Test
-    void updateUser_SameEmailSameUserWithDifferentName_ReturnsOk() throws Exception {
+    void shouldReturnOkWhenUpdateUserNameOnly() throws Exception {
         // Создаем пользователя
         UserDto userDto = UserDto.builder()
                 .name("User One")
@@ -182,7 +182,7 @@ class UserControllerEmailTest {
     }
 
     @Test
-    void createUser_WithDifferentEmails_ReturnsOk() throws Exception {
+    void shouldReturnOkWhenCreatingUsersWithDifferentEmails() throws Exception {
         // Создаем первого пользователя
         UserDto userDto1 = UserDto.builder()
                 .name("User One")

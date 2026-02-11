@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ItemMapperTest {
 
     @Test
-    void toItemDto_ValidItem_ReturnsItemDto() {
+    void shouldConvertItemToItemDto() {
         User owner = User.builder()
                 .id(1L)
                 .name("Owner")
@@ -37,7 +37,7 @@ class ItemMapperTest {
     }
 
     @Test
-    void toItem_ValidItemDto_ReturnsItem() {
+    void shouldConvertItemDtoToItem() {
         User owner = User.builder()
                 .id(1L)
                 .name("Owner")

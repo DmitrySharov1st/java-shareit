@@ -28,7 +28,7 @@ class UserServiceTest {
     }
 
     @Test
-    void createUser_ValidUser_ReturnsCreatedUser() {
+    void createUserShouldReturnCreatedUserWhenValidUser() {
         User createdUser = userService.create(user);
 
         assertNotNull(createdUser);
@@ -38,7 +38,7 @@ class UserServiceTest {
     }
 
     @Test
-    void createUser_DuplicateId_ReturnsUpdatedUser() {
+    void updateUserShouldReturnUpdatedUserWhenDuplicateId() {
         User createdUser = userService.create(user);
         User duplicateUser = User.builder()
                 .id(createdUser.getId())
@@ -53,7 +53,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_PartialUpdate_ReturnsUpdatedUser() {
+    void updateUserShouldReturnUpdatedUserWhenPartialUpdate() {
         userService.create(user);
 
         User partialUpdate = User.builder()
@@ -69,7 +69,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_NonExistentUser_ThrowsNotFoundException() {
+    void updateUserShouldThrowNotFoundExceptionWhenNonExistentUser() {
         User nonExistentUser = User.builder()
                 .id(999L)
                 .name("Non Existent")
@@ -80,7 +80,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserById_ValidId_ReturnsUser() {
+    void getUserByIdShouldReturnUserWhenValidId() {
         userService.create(user);
 
         User foundUser = userService.getById(1L);
@@ -91,12 +91,12 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserById_NonExistentId_ThrowsNotFoundException() {
+    void getUserByIdShouldThrowNotFoundExceptionWhenNonExistentId() {
         assertThrows(NotFoundException.class, () -> userService.getById(999L));
     }
 
     @Test
-    void getAllUsers_ReturnsUserList() {
+    void getAllUsersShouldReturnUserList() {
         userService.create(user);
 
         List<User> users = userService.getAll();
@@ -107,7 +107,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUser_ValidId_DeletesUser() {
+    void deleteUserShouldDeleteUserWhenValidId() {
         userService.create(user);
 
         userService.delete(1L);
@@ -116,12 +116,12 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUser_NonExistentId_ThrowsNotFoundException() {
+    void deleteUserShouldThrowNotFoundExceptionWhenNonExistentId() {
         assertThrows(NotFoundException.class, () -> userService.delete(999L));
     }
 
     @Test
-    void createUser_DuplicateEmail_ThrowsConflictException() {
+    void createUserShouldThrowConflictExceptionWhenDuplicateEmail() {
         userService.create(user);
 
         User duplicateUser = User.builder()
@@ -133,7 +133,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUser_DuplicateEmail_ThrowsConflictException() {
+    void updateUserShouldThrowConflictExceptionWhenDuplicateEmail() {
         User user1 = User.builder()
                 .name("User One")
                 .email("user1@example.com")

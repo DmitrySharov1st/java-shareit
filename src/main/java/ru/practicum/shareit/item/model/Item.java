@@ -1,20 +1,20 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.user.User;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+
 public class Item {
-    private Long id;
-    private String name;
-    private String description;
-    private Boolean available;
-    private User owner;
-    private Long requestId;
+    Long id;
+    String name;
+    String description;
+    Boolean available;
+    User owner;
+    Long requestId;
 }

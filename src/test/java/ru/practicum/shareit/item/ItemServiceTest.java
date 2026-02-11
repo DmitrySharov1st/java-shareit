@@ -44,7 +44,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void createItem_ValidItem_ReturnsItemDto() {
+    void createItemShouldReturnItemDtoWhenValidItem() {
         when(userService.getById(1L)).thenReturn(owner);
 
         ItemDto result = itemService.create(itemDto, 1L);
@@ -56,14 +56,14 @@ class ItemServiceTest {
     }
 
     @Test
-    void createItem_InvalidUser_ThrowsNotFoundException() {
+    void createItemShouldThrowNotFoundExceptionWhenInvalidUser() {
         when(userService.getById(999L)).thenThrow(new NotFoundException("User not found"));
 
         assertThrows(NotFoundException.class, () -> itemService.create(itemDto, 999L));
     }
 
     @Test
-    void updateItem_ValidUpdate_ReturnsUpdatedItemDto() {
+    void updateItemShouldReturnUpdatedItemDtoWhenValidUpdate() {
         when(userService.getById(1L)).thenReturn(owner);
         ItemDto createdItem = itemService.create(itemDto, 1L);
 
@@ -80,11 +80,10 @@ class ItemServiceTest {
     }
 
     @Test
-    void updateItem_NotOwner_ThrowsNotFoundException() {
+    void updateItemShouldThrowNotFoundExceptionWhenNotOwner() {
         when(userService.getById(1L)).thenReturn(owner);
         ItemDto createdItem = itemService.create(itemDto, 1L);
 
-        // Заглушка для userService.getById(2L) не нужна, так как метод update не вызывает userService.getById(2L)
         ItemDto updateDto = ItemDto.builder()
                 .name("Обновленная дрель")
                 .build();
@@ -94,7 +93,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void updateItem_NonExistentItem_ThrowsNotFoundException() {
+    void updateItemShouldThrowNotFoundExceptionWhenNonExistentItem() {
         ItemDto updateDto = ItemDto.builder()
                 .name("Обновленная дрель")
                 .build();
@@ -104,7 +103,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void getItemById_ValidId_ReturnsItemDto() {
+    void getItemByIdShouldReturnItemDtoWhenValidId() {
         when(userService.getById(1L)).thenReturn(owner);
         ItemDto createdItem = itemService.create(itemDto, 1L);
 
@@ -116,12 +115,12 @@ class ItemServiceTest {
     }
 
     @Test
-    void getItemById_NonExistentId_ThrowsNotFoundException() {
+    void getItemByIdShouldThrowNotFoundExceptionWhenNonExistentId() {
         assertThrows(NotFoundException.class, () -> itemService.getById(999L));
     }
 
     @Test
-    void getAllItemsByOwner_ReturnsItemList() {
+    void getAllItemsByOwnerShouldReturnItemList() {
         when(userService.getById(1L)).thenReturn(owner);
         itemService.create(itemDto, 1L);
 
@@ -133,7 +132,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void getAllItemsByOwner_NoItems_ReturnsEmptyList() {
+    void getAllItemsByOwnerShouldReturnEmptyListWhenNoItems() {
         List<ItemDto> result = itemService.getAllByOwner(1L);
 
         assertNotNull(result);
@@ -141,7 +140,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void searchItems_ValidText_ReturnsAvailableItems() {
+    void searchItemsShouldReturnAvailableItemsWhenValidText() {
         when(userService.getById(1L)).thenReturn(owner);
         itemService.create(itemDto, 1L);
 
@@ -154,7 +153,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void searchItems_EmptyText_ReturnsEmptyList() {
+    void searchItemsShouldReturnEmptyListWhenEmptyText() {
         List<ItemDto> result = itemService.search("");
 
         assertNotNull(result);
@@ -162,7 +161,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void searchItems_NoMatchingItems_ReturnsEmptyList() {
+    void searchItemsShouldReturnEmptyListWhenNoMatchingItems() {
         when(userService.getById(1L)).thenReturn(owner);
         itemService.create(itemDto, 1L);
 
@@ -173,7 +172,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void searchItems_OnlyAvailableItems_ReturnsFilteredList() {
+    void searchItemsShouldReturnFilteredListWhenOnlyAvailableItems() {
         when(userService.getById(1L)).thenReturn(owner);
 
         // Создаем доступную вещь
@@ -196,7 +195,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void searchItems_CaseInsensitiveSearch_ReturnsItems() {
+    void searchItemsShouldReturnItemsWhenCaseInsensitiveSearch() {
         when(userService.getById(1L)).thenReturn(owner);
         itemService.create(itemDto, 1L);
 
@@ -210,7 +209,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void updateItem_PartialUpdate_ReturnsPartiallyUpdatedItem() {
+    void updateItemShouldReturnPartiallyUpdatedItemWhenPartialUpdate() {
         when(userService.getById(1L)).thenReturn(owner);
         ItemDto createdItem = itemService.create(itemDto, 1L);
 

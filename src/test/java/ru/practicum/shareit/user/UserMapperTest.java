@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserMapperTest {
 
     @Test
-    void toUserDto_ValidUser_ReturnsUserDto() {
+    void shouldConvertUserToUserDto() {
         User user = User.builder()
                 .id(1L)
                 .name("Test User")
@@ -24,7 +24,7 @@ class UserMapperTest {
     }
 
     @Test
-    void toUser_ValidUserDto_ReturnsUser() {
+    void shouldConvertUserDtoToUser() {
         UserDto userDto = UserDto.builder()
                 .id(1L)
                 .name("Test User")

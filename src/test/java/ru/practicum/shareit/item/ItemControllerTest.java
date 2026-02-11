@@ -34,6 +34,9 @@ class ItemControllerTest {
 
     private ItemDto itemDto;
 
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private static final Long VALID_USER_ID = 1L;
+
     @BeforeEach
     void setUp() {
         itemDto = ItemDto.builder()
@@ -45,11 +48,11 @@ class ItemControllerTest {
     }
 
     @Test
-    void createItem_ValidItem_ReturnsCreated() throws Exception {
+    void shouldCreateItemWhenValidItem() throws Exception {
         when(itemService.create(any(), anyLong())).thenReturn(itemDto);
 
         mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", 1L)
+                        .header(USER_ID_HEADER, VALID_USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isOk())
@@ -60,27 +63,27 @@ class ItemControllerTest {
     }
 
     @Test
-    void createItem_MissingUserIdHeader_ReturnsBadRequest() throws Exception {
+    void shouldReturnBadRequestWhenUserIdHeaderMissing() throws Exception {
         mockMvc.perform(post("/items")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Missing required header: X-Sharer-User-Id"));
+                .andExpect(jsonPath("$.error").value("Missing required header: " + USER_ID_HEADER));
     }
 
     @Test
-    void createItem_EmptyName_ReturnsBadRequest() throws Exception {
+    void shouldReturnBadRequestWhenItemNameEmpty() throws Exception {
         itemDto.setName("");
 
         mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", 1L)
+                        .header(USER_ID_HEADER, VALID_USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(itemDto)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void updateItem_ValidUpdate_ReturnsOk() throws Exception {
+    void shouldUpdateItemWhenValidUpdate() throws Exception {
         ItemDto updatedItem = ItemDto.builder()
                 .id(1L)
                 .name("Дрель обновленная")
@@ -91,7 +94,7 @@ class ItemControllerTest {
         when(itemService.update(anyLong(), any(), anyLong())).thenReturn(updatedItem);
 
         mockMvc.perform(patch("/items/{itemId}", 1L)
-                        .header("X-Sharer-User-Id", 1L)
+                        .header(USER_ID_HEADER, VALID_USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedItem)))
                 .andExpect(status().isOk())
@@ -100,7 +103,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getItemById_ValidId_ReturnsItem() throws Exception {
+    void shouldReturnItemWhenValidId() throws Exception {
         when(itemService.getById(1L)).thenReturn(itemDto);
 
         mockMvc.perform(get("/items/{itemId}", 1L))
@@ -110,7 +113,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getItemById_NonExistentId_ReturnsNotFound() throws Exception {
+    void shouldReturnNotFoundWhenNonExistentId() throws Exception {
         when(itemService.getById(999L)).thenThrow(new NotFoundException("Item not found"));
 
         mockMvc.perform(get("/items/{itemId}", 999L))
@@ -118,18 +121,18 @@ class ItemControllerTest {
     }
 
     @Test
-    void getAllItemsByOwner_ReturnsItemList() throws Exception {
+    void shouldReturnItemListWhenOwnerHasItems() throws Exception {
         when(itemService.getAllByOwner(anyLong())).thenReturn(List.of(itemDto));
 
         mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", 1L))
+                        .header(USER_ID_HEADER, VALID_USER_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].name").value("Дрель"));
     }
 
     @Test
-    void searchItems_ValidText_ReturnsItems() throws Exception {
+    void shouldReturnItemsWhenValidSearchText() throws Exception {
         when(itemService.search(anyString())).thenReturn(List.of(itemDto));
 
         mockMvc.perform(get("/items/search")
@@ -140,7 +143,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void searchItems_EmptyText_ReturnsEmptyList() throws Exception {
+    void shouldReturnEmptyListWhenEmptySearchText() throws Exception {
         mockMvc.perform(get("/items/search")
                         .param("text", ""))
                 .andExpect(status().isOk())

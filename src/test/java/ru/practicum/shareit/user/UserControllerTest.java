@@ -14,6 +14,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +34,9 @@ class UserControllerTest {
 
     private UserDto userDto;
 
+    private static final String USERS_PATH = "/users";
+    private static final String USER_ID_PATH = "/users/{userId}";
+
     @BeforeEach
     void setUp() {
         userDto = UserDto.builder()
@@ -43,10 +47,10 @@ class UserControllerTest {
     }
 
     @Test
-    void createUser_ValidUser_ReturnsCreated() throws Exception {
+    void shouldCreateUserWhenValidUser() throws Exception {
         when(userService.create(any())).thenReturn(UserMapper.toUser(userDto));
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isOk())
@@ -56,27 +60,27 @@ class UserControllerTest {
     }
 
     @Test
-    void createUser_EmptyName_ReturnsBadRequest() throws Exception {
+    void shouldReturnBadRequestWhenUserNameEmpty() throws Exception {
         userDto.setName("");
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void createUser_InvalidEmail_ReturnsBadRequest() throws Exception {
+    void shouldReturnBadRequestWhenInvalidEmail() throws Exception {
         userDto.setEmail("invalid-email");
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void updateUser_ValidData_ReturnsOk() throws Exception {
+    void shouldUpdateUserWhenValidData() throws Exception {
         UserDto updatedUser = UserDto.builder()
                 .id(1L)
                 .name("John Updated")
@@ -85,7 +89,7 @@ class UserControllerTest {
 
         when(userService.update(any())).thenReturn(UserMapper.toUser(updatedUser));
 
-        mockMvc.perform(patch("/users/{userId}", 1L)
+        mockMvc.perform(patch(USER_ID_PATH, 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(status().isOk())
@@ -94,10 +98,10 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserById_ValidId_ReturnsUser() throws Exception {
+    void shouldReturnUserWhenValidId() throws Exception {
         when(userService.getById(1L)).thenReturn(UserMapper.toUser(userDto));
 
-        mockMvc.perform(get("/users/{userId}", 1L))
+        mockMvc.perform(get(USER_ID_PATH, 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("John Doe"))
@@ -105,31 +109,31 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserById_NonExistentId_ReturnsNotFound() throws Exception {
+    void shouldReturnNotFoundWhenNonExistentUserId() throws Exception {
         when(userService.getById(999L)).thenThrow(new NotFoundException("User not found"));
 
-        mockMvc.perform(get("/users/{userId}", 999L))
+        mockMvc.perform(get(USER_ID_PATH, 999L))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void getAllUsers_ReturnsUserList() throws Exception {
-        mockMvc.perform(get("/users"))
+    void shouldReturnAllUsers() throws Exception {
+        mockMvc.perform(get(USERS_PATH))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void deleteUser_ValidId_ReturnsOk() throws Exception {
-        mockMvc.perform(delete("/users/{userId}", 1L))
+    void shouldDeleteUserWhenValidId() throws Exception {
+        mockMvc.perform(delete(USER_ID_PATH, 1L))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void createUser_DuplicateEmail_ReturnsConflict() throws Exception {
+    void shouldReturnConflictWhenDuplicateEmail() throws Exception {
         // Создаем первого пользователя
         when(userService.create(any())).thenReturn(UserMapper.toUser(userDto));
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isOk());
@@ -137,7 +141,7 @@ class UserControllerTest {
         // Пытаемся создать второго пользователя с тем же email
         when(userService.create(any())).thenThrow(new ConflictException("Email already exists"));
 
-        mockMvc.perform(post("/users")
+        mockMvc.perform(post(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isConflict())

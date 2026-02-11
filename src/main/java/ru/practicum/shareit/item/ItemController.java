@@ -14,16 +14,19 @@ public class ItemController {
 
     private final ItemService itemService;
 
+    // Константа для заголовка
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
+
     @PostMapping
     public ItemDto create(@Valid @RequestBody ItemDto itemDto,
-                          @RequestHeader("X-Sharer-User-Id") Long userId) {
+                          @RequestHeader(USER_ID_HEADER) Long userId) {
         return itemService.create(itemDto, userId);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@PathVariable Long itemId,
                           @RequestBody ItemDto itemDto,
-                          @RequestHeader("X-Sharer-User-Id") Long userId) {
+                          @RequestHeader(USER_ID_HEADER) Long userId) {
         return itemService.update(itemId, itemDto, userId);
     }
 
@@ -33,7 +36,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAllByOwner(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getAllByOwner(@RequestHeader(USER_ID_HEADER) Long userId) {
         return itemService.getAllByOwner(userId);
     }
 
