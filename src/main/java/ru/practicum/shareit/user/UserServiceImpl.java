@@ -2,85 +2,71 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
-    private final Map<Long, User> users = new HashMap<>();
-    private Long nextId = 1L;
+    private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public User create(User user) {
-        // Проверка уникальности email
-        checkEmailUniqueness(user.getEmail(), null);
-
-        user.setId(nextId++);
-        users.put(user.getId(), user);
-        return user;
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new ConflictException(
+                    String.format("Email %s is already in use", user.getEmail()));
+        }
+        return userRepository.save(user);
     }
 
     @Override
+    @Transactional
     public User update(User user) {
         Long userId = user.getId();
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException(String.format("User with id %s not found", userId));
-        }
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("User with id %d not found", userId)));
 
-        User existingUser = users.get(userId);
-
-        // Если email изменяется, проверяем уникальность
         if (user.getEmail() != null && !user.getEmail().equals(existingUser.getEmail())) {
-            checkEmailUniqueness(user.getEmail(), userId);
+            if (userRepository.existsByEmail(user.getEmail())) {
+                throw new ConflictException(
+                        String.format("Email %s is already in use", user.getEmail()));
+            }
+            existingUser.setEmail(user.getEmail());
         }
 
         if (user.getName() != null) {
             existingUser.setName(user.getName());
         }
 
-        if (user.getEmail() != null) {
-            existingUser.setEmail(user.getEmail());
-        }
-
-        users.put(userId, existingUser);
         return existingUser;
     }
 
     @Override
     public User getById(Long id) {
-        User user = users.get(id);
-        if (user == null) {
-            throw new NotFoundException(String.format("User with id %s not found", id));
-        }
-        return user;
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("User with id %d not found", id)));
     }
 
     @Override
     public List<User> getAll() {
-        return new ArrayList<>(users.values());
+        return userRepository.findAll();
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
-        if (!users.containsKey(id)) {
-            throw new NotFoundException(String.format("User with id %s not found", id));
+        if (!userRepository.existsById(id)) {
+            throw new NotFoundException(
+                    String.format("User with id %d not found", id));
         }
-        users.remove(id);
-    }
-
-    private void checkEmailUniqueness(String email, Long excludeUserId) {
-        for (User user : users.values()) {
-            // Если нашли пользователя с таким email, и это не тот же самый пользователь (при обновлении)
-            if (user.getEmail().equals(email) && !user.getId().equals(excludeUserId)) {
-                throw new ConflictException(String.format("Email %s is already in use", email));
-            }
-        }
+        userRepository.deleteById(id);
     }
 }

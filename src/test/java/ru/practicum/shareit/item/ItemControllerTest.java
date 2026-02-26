@@ -10,8 +10,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -33,6 +34,9 @@ class ItemControllerTest {
     private ItemService itemService;
 
     private ItemDto itemDto;
+    private ItemDetailedDto itemDetailedDto;
+    private ItemOwnerDto itemOwnerDto;
+    private CommentDto commentDto;
 
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private static final Long VALID_USER_ID = 1L;
@@ -45,11 +49,37 @@ class ItemControllerTest {
                 .description("Мощная дрель для бетона")
                 .available(true)
                 .build();
+
+        itemDetailedDto = ItemDetailedDto.builder()
+                .id(1L)
+                .name("Дрель")
+                .description("Мощная дрель для бетона")
+                .available(true)
+                .comments(List.of())
+                .lastBooking(null)
+                .nextBooking(null)
+                .build();
+
+        itemOwnerDto = ItemOwnerDto.builder()
+                .id(1L)
+                .name("Дрель")
+                .description("Мощная дрель для бетона")
+                .available(true)
+                .lastBooking(null)
+                .nextBooking(null)
+                .build();
+
+        commentDto = CommentDto.builder()
+                .id(1L)
+                .text("Great item!")
+                .authorName("User")
+                .created(LocalDateTime.now())
+                .build();
     }
 
     @Test
     void shouldCreateItemWhenValidItem() throws Exception {
-        when(itemService.create(any(), anyLong())).thenReturn(itemDto);
+        when(itemService.create(any(ItemDto.class), anyLong())).thenReturn(itemDto);
 
         mockMvc.perform(post("/items")
                         .header(USER_ID_HEADER, VALID_USER_ID)
@@ -91,7 +121,7 @@ class ItemControllerTest {
                 .available(false)
                 .build();
 
-        when(itemService.update(anyLong(), any(), anyLong())).thenReturn(updatedItem);
+        when(itemService.update(anyLong(), any(ItemDto.class), anyLong())).thenReturn(updatedItem);
 
         mockMvc.perform(patch("/items/{itemId}", 1L)
                         .header(USER_ID_HEADER, VALID_USER_ID)
@@ -103,26 +133,27 @@ class ItemControllerTest {
     }
 
     @Test
-    void shouldReturnItemWhenValidId() throws Exception {
-        when(itemService.getById(1L)).thenReturn(itemDto);
+    void shouldReturnItemDetailedWhenValidId() throws Exception {
+        when(itemService.getById(1L, null)).thenReturn(itemDetailedDto);
 
         mockMvc.perform(get("/items/{itemId}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Дрель"));
+                .andExpect(jsonPath("$.name").value("Дрель"))
+                .andExpect(jsonPath("$.comments").isArray());
     }
 
     @Test
     void shouldReturnNotFoundWhenNonExistentId() throws Exception {
-        when(itemService.getById(999L)).thenThrow(new NotFoundException("Item not found"));
+        when(itemService.getById(999L, null)).thenThrow(new NotFoundException("Item not found"));
 
         mockMvc.perform(get("/items/{itemId}", 999L))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldReturnItemListWhenOwnerHasItems() throws Exception {
-        when(itemService.getAllByOwner(anyLong())).thenReturn(List.of(itemDto));
+    void shouldReturnItemOwnerDtoListWhenOwnerHasItems() throws Exception {
+        when(itemService.getAllByOwner(anyLong())).thenReturn(List.of(itemOwnerDto));
 
         mockMvc.perform(get("/items")
                         .header(USER_ID_HEADER, VALID_USER_ID))
@@ -148,5 +179,20 @@ class ItemControllerTest {
                         .param("text", ""))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    void shouldAddCommentAndReturnCommentDto() throws Exception {
+        CommentCreateDto createDto = new CommentCreateDto("Great item!");
+        when(itemService.addComment(anyLong(), anyLong(), any(CommentCreateDto.class)))
+                .thenReturn(commentDto);
+
+        mockMvc.perform(post("/items/{itemId}/comment", 1L)
+                        .header(USER_ID_HEADER, 2L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.text").value("Great item!"));
     }
 }

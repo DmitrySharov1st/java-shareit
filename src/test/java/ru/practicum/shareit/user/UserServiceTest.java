@@ -3,23 +3,32 @@ package ru.practicum.shareit.user;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NotFoundException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
     private UserServiceImpl userService;
+
     private User user;
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl();
         user = User.builder()
                 .id(1L)
                 .name("Test User")
@@ -29,129 +38,97 @@ class UserServiceTest {
 
     @Test
     void createUserShouldReturnCreatedUserWhenValidUser() {
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
         User createdUser = userService.create(user);
 
         assertNotNull(createdUser);
         assertEquals("Test User", createdUser.getName());
         assertEquals("test@example.com", createdUser.getEmail());
-        assertNotNull(createdUser.getId());
+        assertEquals(1L, createdUser.getId());
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void updateUserShouldReturnUpdatedUserWhenDuplicateId() {
-        User createdUser = userService.create(user);
-        User duplicateUser = User.builder()
-                .id(createdUser.getId())
+    void createUserShouldThrowConflictExceptionWhenDuplicateEmail() {
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
+
+        assertThrows(ConflictException.class, () -> userService.create(user));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateUserShouldReturnUpdatedUserWhenValidUpdate() {
+        User updatedData = User.builder()
+                .id(1L)
                 .name("Updated Name")
                 .email("updated@example.com")
                 .build();
 
-        User updatedUser = userService.update(duplicateUser);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.existsByEmail(updatedData.getEmail())).thenReturn(false);
 
-        assertEquals("Updated Name", updatedUser.getName());
-        assertEquals("updated@example.com", updatedUser.getEmail());
-    }
-
-    @Test
-    void updateUserShouldReturnUpdatedUserWhenPartialUpdate() {
-        userService.create(user);
-
-        User partialUpdate = User.builder()
-                .id(1L)
-                .name("New Name")
-                .build();
-
-        User result = userService.update(partialUpdate);
+        User result = userService.update(updatedData);
 
         assertNotNull(result);
-        assertEquals("New Name", result.getName());
-        assertEquals("test@example.com", result.getEmail());
+        assertEquals("Updated Name", result.getName());
+        assertEquals("updated@example.com", result.getEmail());
+        // Проверяем, что исходный объект (user) тоже обновился (опционально)
+        assertEquals("Updated Name", user.getName());
+        assertEquals("updated@example.com", user.getEmail());
     }
 
     @Test
     void updateUserShouldThrowNotFoundExceptionWhenNonExistentUser() {
-        User nonExistentUser = User.builder()
-                .id(999L)
-                .name("Non Existent")
-                .email("nonexistent@example.com")
-                .build();
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        User nonExistentUser = User.builder().id(999L).name("Any").build();
 
         assertThrows(NotFoundException.class, () -> userService.update(nonExistentUser));
     }
 
     @Test
     void getUserByIdShouldReturnUserWhenValidId() {
-        userService.create(user);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         User foundUser = userService.getById(1L);
 
         assertNotNull(foundUser);
         assertEquals(1L, foundUser.getId());
-        assertEquals("Test User", foundUser.getName());
     }
 
     @Test
     void getUserByIdShouldThrowNotFoundExceptionWhenNonExistentId() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
         assertThrows(NotFoundException.class, () -> userService.getById(999L));
     }
 
     @Test
     void getAllUsersShouldReturnUserList() {
-        userService.create(user);
+        when(userRepository.findAll()).thenReturn(List.of(user));
 
         List<User> users = userService.getAll();
 
         assertNotNull(users);
         assertEquals(1, users.size());
-        assertEquals("Test User", users.get(0).getName());
     }
 
     @Test
     void deleteUserShouldDeleteUserWhenValidId() {
-        userService.create(user);
+        when(userRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(userRepository).deleteById(1L);
 
         userService.delete(1L);
 
-        assertThrows(NotFoundException.class, () -> userService.getById(1L));
+        verify(userRepository).deleteById(1L);
     }
 
     @Test
     void deleteUserShouldThrowNotFoundExceptionWhenNonExistentId() {
+        when(userRepository.existsById(999L)).thenReturn(false);
+
         assertThrows(NotFoundException.class, () -> userService.delete(999L));
-    }
-
-    @Test
-    void createUserShouldThrowConflictExceptionWhenDuplicateEmail() {
-        userService.create(user);
-
-        User duplicateUser = User.builder()
-                .name("Another User")
-                .email("test@example.com") // Тот же email
-                .build();
-
-        assertThrows(ConflictException.class, () -> userService.create(duplicateUser));
-    }
-
-    @Test
-    void updateUserShouldThrowConflictExceptionWhenDuplicateEmail() {
-        User user1 = User.builder()
-                .name("User One")
-                .email("user1@example.com")
-                .build();
-        User createdUser1 = userService.create(user1);
-
-        User user2 = User.builder()
-                .name("User Two")
-                .email("user2@example.com")
-                .build();
-        User createdUser2 = userService.create(user2);
-
-        // Пытаемся обновить второго пользователя, установив email первого
-        User updateUser2 = User.builder()
-                .id(createdUser2.getId())
-                .email("user1@example.com") // Email первого пользователя
-                .build();
-
-        assertThrows(ConflictException.class, () -> userService.update(updateUser2));
     }
 }

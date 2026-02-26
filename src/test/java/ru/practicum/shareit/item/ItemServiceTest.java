@@ -6,143 +6,200 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
 
     @Mock
-    private UserService userService;
+    private ItemRepository itemRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private BookingRepository bookingRepository;
+    @Mock
+    private CommentRepository commentRepository;
 
     @InjectMocks
     private ItemServiceImpl itemService;
 
-    private ItemDto itemDto;
     private User owner;
+    private User booker;
+    private Item item;
+    private ItemDto itemDto;
+    private Comment comment;
+    private CommentDto commentDto;
+    private Booking booking;
 
     @BeforeEach
     void setUp() {
         owner = User.builder()
                 .id(1L)
                 .name("Owner")
-                .email("owner@example.com")
+                .email("owner@test.com")
                 .build();
-
+        booker = User.builder()
+                .id(2L)
+                .name("Booker")
+                .email("booker@test.com")
+                .build();
+        item = Item.builder()
+                .id(1L)
+                .name("Дрель")
+                .description("Мощная дрель")
+                .available(true)
+                .owner(owner)
+                .build();
         itemDto = ItemDto.builder()
                 .name("Дрель")
                 .description("Мощная дрель")
                 .available(true)
                 .build();
+        comment = Comment.builder()
+                .id(1L)
+                .text("Great item!")
+                .item(item)
+                .author(booker)
+                .created(LocalDateTime.now())
+                .build();
+        commentDto = CommentDto.builder()
+                .id(1L)
+                .text("Great item!")
+                .authorName(booker.getName())
+                .created(comment.getCreated())
+                .build();
+        booking = Booking.builder()
+                .id(1L)
+                .start(LocalDateTime.now().minusDays(5))
+                .end(LocalDateTime.now().minusDays(1))
+                .item(item)
+                .booker(booker)
+                .status(BookingStatus.APPROVED)
+                .build();
     }
 
     @Test
     void createItemShouldReturnItemDtoWhenValidItem() {
-        when(userService.getById(1L)).thenReturn(owner);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+        when(itemRepository.save(any(Item.class))).thenReturn(item);
 
         ItemDto result = itemService.create(itemDto, 1L);
 
         assertNotNull(result);
-        assertNotNull(result.getId());
+        assertEquals(1L, result.getId());
         assertEquals("Дрель", result.getName());
         assertTrue(result.getAvailable());
     }
 
     @Test
     void createItemShouldThrowNotFoundExceptionWhenInvalidUser() {
-        when(userService.getById(999L)).thenThrow(new NotFoundException("User not found"));
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> itemService.create(itemDto, 999L));
     }
 
     @Test
     void updateItemShouldReturnUpdatedItemDtoWhenValidUpdate() {
-        when(userService.getById(1L)).thenReturn(owner);
-        ItemDto createdItem = itemService.create(itemDto, 1L);
-
         ItemDto updateDto = ItemDto.builder()
                 .name("Обновленная дрель")
                 .available(false)
                 .build();
 
-        ItemDto result = itemService.update(createdItem.getId(), updateDto, 1L);
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        // save не вызывается отдельно, изменения происходят через управление JPA, поэтому можно не мокать save
+
+        ItemDto result = itemService.update(1L, updateDto, 1L);
 
         assertNotNull(result);
         assertEquals("Обновленная дрель", result.getName());
         assertFalse(result.getAvailable());
+        assertEquals("Мощная дрель", result.getDescription()); // не менялось
     }
 
     @Test
     void updateItemShouldThrowNotFoundExceptionWhenNotOwner() {
-        when(userService.getById(1L)).thenReturn(owner);
-        ItemDto createdItem = itemService.create(itemDto, 1L);
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
 
-        ItemDto updateDto = ItemDto.builder()
-                .name("Обновленная дрель")
-                .build();
+        ItemDto updateDto = ItemDto.builder().name("New").build();
 
-        assertThrows(NotFoundException.class, () ->
-                itemService.update(createdItem.getId(), updateDto, 2L));
+        assertThrows(NotFoundException.class, () -> itemService.update(1L, updateDto, 2L));
     }
 
     @Test
     void updateItemShouldThrowNotFoundExceptionWhenNonExistentItem() {
-        ItemDto updateDto = ItemDto.builder()
-                .name("Обновленная дрель")
-                .build();
+        when(itemRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () ->
-                itemService.update(999L, updateDto, 1L));
+        assertThrows(NotFoundException.class, () -> itemService.update(999L, itemDto, 1L));
     }
 
     @Test
-    void getItemByIdShouldReturnItemDtoWhenValidId() {
-        when(userService.getById(1L)).thenReturn(owner);
-        ItemDto createdItem = itemService.create(itemDto, 1L);
+    void getItemByIdShouldReturnItemResponseDtoWithComments() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(commentRepository.findByItemId(1L)).thenReturn(List.of(comment));
 
-        ItemDto result = itemService.getById(createdItem.getId());
+        ItemResponseDto result = itemService.getById(1L);
 
         assertNotNull(result);
-        assertEquals(createdItem.getId(), result.getId());
-        assertEquals("Дрель", result.getName());
+        assertEquals(1L, result.getId());
+        assertEquals(1, result.getComments().size());
+        assertEquals("Great item!", result.getComments().get(0).getText());
     }
 
     @Test
     void getItemByIdShouldThrowNotFoundExceptionWhenNonExistentId() {
+        when(itemRepository.findById(999L)).thenReturn(Optional.empty());
+
         assertThrows(NotFoundException.class, () -> itemService.getById(999L));
     }
 
     @Test
-    void getAllItemsByOwnerShouldReturnItemList() {
-        when(userService.getById(1L)).thenReturn(owner);
-        itemService.create(itemDto, 1L);
+    void getAllItemsByOwnerShouldReturnItemOwnerDtoList() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(owner));
+        when(itemRepository.findByOwnerId(1L)).thenReturn(List.of(item));
+        when(bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
+                eq(1L), any(LocalDateTime.class), eq(BookingStatus.APPROVED)))
+                .thenReturn(Optional.of(booking));
+        when(bookingRepository.findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
+                eq(1L), any(LocalDateTime.class), eq(BookingStatus.APPROVED)))
+                .thenReturn(Optional.empty());
 
-        List<ItemDto> result = itemService.getAllByOwner(1L);
+        List<ItemOwnerDto> result = itemService.getAllByOwner(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Дрель", result.get(0).getName());
+        ItemOwnerDto dto = result.get(0);
+        assertNotNull(dto.getLastBooking());
+        assertNull(dto.getNextBooking());
+        assertEquals(booking.getId(), dto.getLastBooking().getId());
     }
 
     @Test
-    void getAllItemsByOwnerShouldReturnEmptyListWhenNoItems() {
-        List<ItemDto> result = itemService.getAllByOwner(1L);
+    void getAllItemsByOwnerShouldThrowNotFoundExceptionWhenUserNotFound() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertThrows(NotFoundException.class, () -> itemService.getAllByOwner(999L));
     }
 
     @Test
     void searchItemsShouldReturnAvailableItemsWhenValidText() {
-        when(userService.getById(1L)).thenReturn(owner);
-        itemService.create(itemDto, 1L);
+        when(itemRepository.search("дрель")).thenReturn(List.of(item));
 
         List<ItemDto> result = itemService.search("дрель");
 
@@ -158,70 +215,80 @@ class ItemServiceTest {
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
+        verify(itemRepository, never()).search(anyString());
     }
 
     @Test
     void searchItemsShouldReturnEmptyListWhenNoMatchingItems() {
-        when(userService.getById(1L)).thenReturn(owner);
-        itemService.create(itemDto, 1L);
+        when(itemRepository.search("xyz")).thenReturn(List.of());
 
-        List<ItemDto> result = itemService.search("несуществующий");
+        List<ItemDto> result = itemService.search("xyz");
 
-        assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void searchItemsShouldReturnFilteredListWhenOnlyAvailableItems() {
-        when(userService.getById(1L)).thenReturn(owner);
+    void addCommentShouldReturnCommentDtoWhenValid() {
+        CommentCreateDto createDto = new CommentCreateDto("Great item!");
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(booker));
+        // Используем any(LocalDateTime.class) для гибкости
+        when(bookingRepository.existsByItemIdAndBookerIdAndEndBeforeAndStatus(
+                anyLong(), anyLong(), any(LocalDateTime.class), eq(BookingStatus.APPROVED)))
+                .thenReturn(true);
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
 
-        // Создаем доступную вещь
-        itemService.create(itemDto, 1L);
-
-        // Создаем недоступную вещь
-        ItemDto unavailableItem = ItemDto.builder()
-                .name("Сломанная дрель")
-                .description("Не работает")
-                .available(false)
-                .build();
-        itemService.create(unavailableItem, 1L);
-
-        List<ItemDto> result = itemService.search("дрель");
+        CommentDto result = itemService.addComment(1L, 2L, createDto);
 
         assertNotNull(result);
-        assertEquals(1, result.size()); // Только доступная вещь
-        assertEquals("Дрель", result.get(0).getName());
-        assertTrue(result.get(0).getAvailable());
+        assertEquals("Great item!", result.getText());
+        assertEquals(booker.getName(), result.getAuthorName());
     }
 
     @Test
-    void searchItemsShouldReturnItemsWhenCaseInsensitiveSearch() {
-        when(userService.getById(1L)).thenReturn(owner);
-        itemService.create(itemDto, 1L);
+    void addCommentShouldThrowValidationExceptionWhenUserNeverBooked() {
+        CommentCreateDto createDto = new CommentCreateDto("Bad item?");
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(booker));
+        // Также используем any(LocalDateTime.class)
+        when(bookingRepository.existsByItemIdAndBookerIdAndEndBeforeAndStatus(
+                anyLong(), anyLong(), any(LocalDateTime.class), eq(BookingStatus.APPROVED)))
+                .thenReturn(false);
 
-        List<ItemDto> result1 = itemService.search("ДРЕЛЬ"); // В верхнем регистре
-        List<ItemDto> result2 = itemService.search("дрель"); // В нижнем регистре
-        List<ItemDto> result3 = itemService.search("Дрель"); // Смешанный регистр
-
-        assertEquals(1, result1.size());
-        assertEquals(1, result2.size());
-        assertEquals(1, result3.size());
+        assertThrows(ValidationException.class, () -> itemService.addComment(1L, 2L, createDto));
     }
 
     @Test
-    void updateItemShouldReturnPartiallyUpdatedItemWhenPartialUpdate() {
-        when(userService.getById(1L)).thenReturn(owner);
-        ItemDto createdItem = itemService.create(itemDto, 1L);
+    void getItemByIdShouldReturnItemDetailedDtoWithCommentsAndNullBookingsForNonOwner() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(commentRepository.findByItemId(1L)).thenReturn(List.of(comment));
+        // Для невладельца (userId=2) не должны вызываться методы поиска бронирований
+        ItemDetailedDto result = itemService.getById(1L, 2L);
 
-        // Обновляем только название
-        ItemDto updateDto = ItemDto.builder()
-                .name("Новое название")
-                .build();
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals(1, result.getComments().size());
+        assertNull(result.getLastBooking());
+        assertNull(result.getNextBooking());
+        verify(bookingRepository, never()).findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(any(), any(), any());
+    }
 
-        ItemDto result = itemService.update(createdItem.getId(), updateDto, 1L);
+    @Test
+    void getItemByIdShouldReturnItemDetailedDtoWithBookingsForOwner() {
+        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
+        when(commentRepository.findByItemId(1L)).thenReturn(List.of(comment));
+        when(bookingRepository.findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
+                eq(1L), any(LocalDateTime.class), eq(BookingStatus.APPROVED)))
+                .thenReturn(Optional.of(booking));
+        when(bookingRepository.findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
+                eq(1L), any(LocalDateTime.class), eq(BookingStatus.APPROVED)))
+                .thenReturn(Optional.empty());
 
-        assertEquals("Новое название", result.getName());
-        assertEquals("Мощная дрель", result.getDescription()); // Осталось прежним
-        assertTrue(result.getAvailable()); // Осталось прежним
+        ItemDetailedDto result = itemService.getById(1L, 1L);
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertNotNull(result.getLastBooking());
+        assertNull(result.getNextBooking());
     }
 }
