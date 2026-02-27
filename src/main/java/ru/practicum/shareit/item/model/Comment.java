@@ -5,31 +5,31 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.user.User;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "items")
+@Table(name = "comments")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Item {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @Column(nullable = false)
-    String name;
-
-    @Column(nullable = false)
-    String description;
-
-    @Column(name = "is_available", nullable = false)
-    Boolean available;
+    String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", nullable = false)
-    User owner;
+    @JoinColumn(name = "item_id", nullable = false)
+    Item item;
 
-    @Column(name = "request_id")
-    Long requestId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    User author;
+
+    @Column(nullable = false)
+    LocalDateTime created;
 }
