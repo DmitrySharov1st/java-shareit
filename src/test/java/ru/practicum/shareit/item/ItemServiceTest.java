@@ -116,7 +116,7 @@ class ItemServiceTest {
     }
 
     @Test
-    void updateItemShouldReturnUpdatedItemDtoWhenValidUpdate() {
+    void shouldUpdateItemWithValidData() {
         ItemDto updateDto = ItemDto.builder()
                 .name("Обновленная дрель")
                 .available(false)
