@@ -6,22 +6,25 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemDto {
-    private Long id;
+    Long id;
 
     @NotBlank(message = "Имя должно быть заполнено")
-    private String name;
+    String name;
 
     @NotBlank(message = "Описание должно быть заполнено")
-    private String description;
+    String description;
 
     @NotNull(message = "Статус доступности должен быть определен")
-    private Boolean available;
+    Boolean available;
 
-    private Long requestId;
+    Long requestId;
 }

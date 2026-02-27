@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
 
 import java.util.List;
 
@@ -11,11 +13,12 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemResponseDto {
-    private Long id;
-    private String name;
-    private String description;
-    private Boolean available;
-    private Long requestId;
-    private List<CommentDto> comments;
+    Long id;
+    String name;
+    String description;
+    Boolean available;
+    Long requestId;
+    List<CommentDto> comments;
 }

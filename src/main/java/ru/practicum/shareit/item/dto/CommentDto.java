@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
 
 import java.time.LocalDateTime;
 
@@ -11,9 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CommentDto {
-    private Long id;
-    private String text;
-    private String authorName;
-    private LocalDateTime created;
+    Long id;
+    String text;
+    String authorName;
+    LocalDateTime created;
 }

@@ -4,17 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ItemOwnerDto {
-    private Long id;
-    private String name;
-    private String description;
-    private Boolean available;
-    private Long requestId;
-    private BookingShortDto lastBooking;
-    private BookingShortDto nextBooking;
+    Long id;
+    String name;
+    String description;
+    Boolean available;
+    Long requestId;
+    BookingShortDto lastBooking;
+    BookingShortDto nextBooking;
 }

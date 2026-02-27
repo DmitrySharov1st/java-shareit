@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.AccessLevel;
 
 import java.time.LocalDateTime;
 
@@ -11,9 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingShortDto {
-    private Long id;
-    private LocalDateTime start;
-    private LocalDateTime end;
-    private Long bookerId;
+    Long id;
+    LocalDateTime start;
+    LocalDateTime end;
+    Long bookerId;
 }
