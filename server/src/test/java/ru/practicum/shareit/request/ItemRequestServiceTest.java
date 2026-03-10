@@ -91,7 +91,7 @@ class ItemRequestServiceTest {
     }
 
     @Test
-    void create_ShouldReturnDto_WhenValid() {
+    void createValidRequestReturnsDto() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(requestor));
         when(mapper.toItemRequest(createDto, requestor)).thenReturn(request);
         when(requestRepository.save(request)).thenReturn(request);
@@ -106,7 +106,7 @@ class ItemRequestServiceTest {
     }
 
     @Test
-    void create_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void createThrowsNotFoundWhenUserNotFound() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> requestService.create(createDto, 99L));
@@ -114,7 +114,7 @@ class ItemRequestServiceTest {
     }
 
     @Test
-    void getUserRequests_ShouldReturnList_WhenUserExists() {
+    void getUserRequestsReturnsListWhenUserExists() {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         when(userRepository.findById(1L)).thenReturn(Optional.of(requestor));
         when(requestRepository.findByRequestorId(1L, sort)).thenReturn(List.of(request));
@@ -129,14 +129,14 @@ class ItemRequestServiceTest {
     }
 
     @Test
-    void getUserRequests_ShouldThrowNotFoundException_WhenUserNotFound() {
+    void getUserRequestsThrowsNotFoundWhenUserNotFound() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> requestService.getUserRequests(99L));
     }
 
     @Test
-    void getAllRequests_ShouldReturnRequestsOfOtherUsers() {
+    void getAllRequestsReturnsOtherUsersRequests() {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         when(userRepository.findById(1L)).thenReturn(Optional.of(requestor));
         when(requestRepository.findByRequestorIdNot(1L, sort)).thenReturn(List.of(request));
@@ -150,7 +150,7 @@ class ItemRequestServiceTest {
     }
 
     @Test
-    void getRequestById_ShouldReturnDto_WhenRequestExists() {
+    void getRequestByIdReturnsDtoWhenRequestExists() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(requestor));
         when(requestRepository.findById(10L)).thenReturn(Optional.of(request));
         when(itemRepository.findByRequestId(10L)).thenReturn(List.of(item));
@@ -163,7 +163,7 @@ class ItemRequestServiceTest {
     }
 
     @Test
-    void getRequestById_ShouldThrowNotFoundException_WhenRequestNotFound() {
+    void getRequestByIdThrowsNotFoundWhenRequestNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(requestor));
         when(requestRepository.findById(99L)).thenReturn(Optional.empty());
 

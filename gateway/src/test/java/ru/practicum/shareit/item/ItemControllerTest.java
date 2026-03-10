@@ -36,7 +36,7 @@ class ItemControllerTest {
     private static final Long USER_ID = 1L;
 
     @Test
-    void create_ValidItem_ShouldReturnOk() throws Exception {
+    void createValidItemReturnsOk() throws Exception {
         ItemCreateDto createDto = new ItemCreateDto();
         createDto.setName("Drill");
         createDto.setDescription("Powerful");
@@ -54,7 +54,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void create_InvalidName_ShouldReturnBadRequest() throws Exception {
+    void createInvalidNameReturnsBadRequest() throws Exception {
         ItemCreateDto createDto = new ItemCreateDto();
         createDto.setName("");
         createDto.setDescription("Powerful");
@@ -68,7 +68,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void create_InvalidDescription_ShouldReturnBadRequest() throws Exception {
+    void createInvalidDescriptionReturnsBadRequest() throws Exception {
         ItemCreateDto createDto = new ItemCreateDto();
         createDto.setName("Drill");
         createDto.setDescription("");
@@ -82,7 +82,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void create_NullAvailable_ShouldReturnBadRequest() throws Exception {
+    void createNullAvailableReturnsBadRequest() throws Exception {
         ItemCreateDto createDto = new ItemCreateDto();
         createDto.setName("Drill");
         createDto.setDescription("Powerful");
@@ -96,7 +96,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void create_MissingUserIdHeader_ShouldReturnBadRequest() throws Exception {
+    void createMissingUserIdHeaderReturnsBadRequest() throws Exception {
         ItemCreateDto createDto = new ItemCreateDto();
         createDto.setName("Drill");
         createDto.setDescription("Powerful");
@@ -110,7 +110,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void update_ValidData_ShouldReturnOk() throws Exception {
+    void updateValidDataReturnsOk() throws Exception {
         ItemUpdateDto updateDto = new ItemUpdateDto();
         updateDto.setName("Updated");
 
@@ -125,7 +125,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getById_ShouldReturnOk() throws Exception {
+    void getByIdReturnsOk() throws Exception {
         when(itemClient.getById(1L, USER_ID)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/items/1")
@@ -134,7 +134,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getAllByOwner_ShouldReturnOk() throws Exception {
+    void getAllByOwnerReturnsOk() throws Exception {
         when(itemClient.getAllByOwner(USER_ID)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/items")
@@ -143,7 +143,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void search_ShouldReturnOk() throws Exception {
+    void searchReturnsOk() throws Exception {
         when(itemClient.search("drill")).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/items/search")
@@ -152,7 +152,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void addComment_ValidText_ShouldReturnOk() throws Exception {
+    void addCommentValidTextReturnsOk() throws Exception {
         CommentCreateDto commentDto = new CommentCreateDto();
         commentDto.setText("Great!");
 
@@ -167,7 +167,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void addComment_EmptyText_ShouldReturnBadRequest() throws Exception {
+    void addCommentEmptyTextReturnsBadRequest() throws Exception {
         CommentCreateDto commentDto = new CommentCreateDto();
         commentDto.setText("");
 

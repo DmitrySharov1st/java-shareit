@@ -30,11 +30,11 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> update(Long itemId, ItemUpdateDto itemDto, Long userId) {
-        return patch("/" + itemId, userId, itemDto);
+        return patch(String.format("/%d", itemId), userId, itemDto);
     }
 
     public ResponseEntity<Object> getById(Long itemId, Long userId) {
-        return get("/" + itemId, userId);
+        return get(String.format("/%d", itemId), userId);
     }
 
     public ResponseEntity<Object> getAllByOwner(Long userId) {
@@ -47,6 +47,6 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> addComment(Long itemId, Long userId, CommentCreateDto commentDto) {
-        return post("/" + itemId + "/comment", userId, commentDto);
+        return post(String.format("/%d/comment", itemId), userId, commentDto);
     }
 }

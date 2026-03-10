@@ -61,17 +61,17 @@ class ItemRequestRepositoryTest {
     }
 
     @Test
-    void findByRequestorId_ShouldReturnRequestsOrderedByCreatedDesc() {
+    void findByRequestorIdReturnsRequestsSortedByCreatedDesc() {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         List<ItemRequest> result = requestRepository.findByRequestorId(user1.getId(), sort);
 
         assertEquals(2, result.size());
-        assertEquals(request2.getId(), result.get(0).getId()); // более новый (created ближе к now)
+        assertEquals(request2.getId(), result.get(0).getId());
         assertEquals(request1.getId(), result.get(1).getId());
     }
 
     @Test
-    void findByRequestorIdNot_ShouldReturnRequestsOfOtherUsers() {
+    void findByRequestorIdNotReturnsOtherUsersRequests() {
         Sort sort = Sort.by(Sort.Direction.DESC, "created");
         List<ItemRequest> result = requestRepository.findByRequestorIdNot(user1.getId(), sort);
 

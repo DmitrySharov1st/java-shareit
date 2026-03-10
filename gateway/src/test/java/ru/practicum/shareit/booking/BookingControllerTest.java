@@ -35,7 +35,7 @@ class BookingControllerTest {
     private static final Long USER_ID = 1L;
 
     @Test
-    void bookItem_ValidRequest_ShouldReturnOk() throws Exception {
+    void bookItemValidShouldReturnOk() throws Exception {
         BookItemRequestDto requestDto = new BookItemRequestDto();
         requestDto.setItemId(1L);
         requestDto.setStart(LocalDateTime.now().plusHours(1));
@@ -52,7 +52,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void bookItem_InvalidDates_ShouldReturnBadRequest() throws Exception {
+    void bookItemInvalidDatesShouldReturnBadRequest() throws Exception {
         BookItemRequestDto requestDto = new BookItemRequestDto();
         requestDto.setItemId(1L);
         requestDto.setStart(LocalDateTime.now().minusDays(1)); // start in past
@@ -66,7 +66,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void bookItem_MissingStart_ShouldReturnBadRequest() throws Exception {
+    void bookItemMissingStartShouldReturnBadRequest() throws Exception {
         BookItemRequestDto requestDto = new BookItemRequestDto();
         requestDto.setItemId(1L);
         requestDto.setEnd(LocalDateTime.now().plusHours(2));
@@ -79,7 +79,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void bookItem_MissingUserIdHeader_ShouldReturnBadRequest() throws Exception {
+    void bookItemMissingUserIdHeaderShouldReturnBadRequest() throws Exception {
         BookItemRequestDto requestDto = new BookItemRequestDto();
         requestDto.setItemId(1L);
         requestDto.setStart(LocalDateTime.now().plusHours(1));
@@ -93,7 +93,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void getBookings_DefaultParams_ShouldReturnOk() throws Exception {
+    void getBookingsDefaultShouldReturnOk() throws Exception {
         when(bookingClient.getBookings(eq(USER_ID), eq("ALL"), eq(0), eq(10)))
                 .thenReturn(ResponseEntity.ok().build());
 
@@ -103,7 +103,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void getBooking_ShouldReturnOk() throws Exception {
+    void getBookingByIdShouldReturnOk() throws Exception {
         when(bookingClient.getBooking(eq(USER_ID), eq(5L)))
                 .thenReturn(ResponseEntity.ok().build());
 
@@ -113,7 +113,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void approveBooking_ShouldReturnOk() throws Exception {
+    void approveBookingShouldReturnOk() throws Exception {
         when(bookingClient.approveBooking(eq(USER_ID), eq(5L), eq(true)))
                 .thenReturn(ResponseEntity.ok().build());
 
@@ -124,7 +124,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void getOwnerBookings_ShouldReturnOk() throws Exception {
+    void getOwnerBookingsShouldReturnOk() throws Exception {
         when(bookingClient.getOwnerBookings(eq(USER_ID), eq("ALL"), eq(0), eq(10)))
                 .thenReturn(ResponseEntity.ok().build());
 

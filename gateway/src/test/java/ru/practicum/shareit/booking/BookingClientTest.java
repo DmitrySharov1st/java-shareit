@@ -39,7 +39,7 @@ class BookingClientTest {
     }
 
     @Test
-    void bookItem_ShouldSendPostRequest() throws Exception {
+    void bookItemSendsPostRequest() throws Exception {
         BookItemRequestDto requestDto = new BookItemRequestDto();
         requestDto.setItemId(1L);
         requestDto.setStart(LocalDateTime.now().plusHours(1));
@@ -58,7 +58,7 @@ class BookingClientTest {
     }
 
     @Test
-    void getBookings_ShouldSendGetRequestWithParams() {
+    void getBookingsSendsGetRequestWithParams() {
         mockServer.expect(requestTo("http://localhost:9090/bookings?state=ALL&from=0&size=10"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("X-Sharer-User-Id", "1"))
@@ -70,7 +70,7 @@ class BookingClientTest {
     }
 
     @Test
-    void getBooking_ShouldSendGetRequest() {
+    void getBookingSendsGetRequest() {
         mockServer.expect(requestTo("http://localhost:9090/bookings/5"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("X-Sharer-User-Id", "1"))
@@ -82,7 +82,7 @@ class BookingClientTest {
     }
 
     @Test
-    void approveBooking_ShouldSendPatchRequest() {
+    void approveBookingSendsPatchRequest() {
         mockServer.expect(requestTo("http://localhost:9090/bookings/5?approved=true"))
                 .andExpect(method(HttpMethod.PATCH))
                 .andExpect(header("X-Sharer-User-Id", "1"))
@@ -94,7 +94,7 @@ class BookingClientTest {
     }
 
     @Test
-    void getOwnerBookings_ShouldSendGetRequest() {
+    void getOwnerBookingsSendsGetRequest() {
         mockServer.expect(requestTo("http://localhost:9090/bookings/owner?state=ALL&from=0&size=10"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("X-Sharer-User-Id", "1"))

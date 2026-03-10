@@ -21,7 +21,7 @@ class BookItemRequestDtoTest {
     private ObjectMapper objectMapper;
 
     @Test
-    void serialize_ShouldIncludeAllFields() throws Exception {
+    void serializationIncludesAllFields() throws Exception {
         LocalDateTime start = LocalDateTime.of(2025, 1, 1, 10, 0);
         LocalDateTime end = LocalDateTime.of(2025, 1, 1, 12, 0);
         BookItemRequestDto dto = new BookItemRequestDto();
@@ -37,7 +37,7 @@ class BookItemRequestDtoTest {
     }
 
     @Test
-    void deserialize_ShouldCreateDto() throws Exception {
+    void deserializationCreatesDto() throws Exception {
         String content = "{\"itemId\":1,\"start\":\"2025-01-01T10:00:00\",\"end\":\"2025-01-01T12:00:00\"}";
 
         BookItemRequestDto dto = objectMapper.readValue(content, BookItemRequestDto.class);

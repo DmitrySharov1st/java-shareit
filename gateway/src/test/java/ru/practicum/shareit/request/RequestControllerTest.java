@@ -34,7 +34,7 @@ class RequestControllerTest {
     private static final Long USER_ID = 1L;
 
     @Test
-    void create_ValidDescription_ShouldReturnOk() throws Exception {
+    void createValidDescriptionReturnsOk() throws Exception {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto();
         createDto.setDescription("Need a tool");
 
@@ -49,7 +49,7 @@ class RequestControllerTest {
     }
 
     @Test
-    void create_EmptyDescription_ShouldReturnBadRequest() throws Exception {
+    void createEmptyDescriptionReturnsBadRequest() throws Exception {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto();
         createDto.setDescription("");
 
@@ -61,7 +61,7 @@ class RequestControllerTest {
     }
 
     @Test
-    void create_MissingUserIdHeader_ShouldReturnBadRequest() throws Exception {
+    void createMissingUserIdHeaderReturnsBadRequest() throws Exception {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto();
         createDto.setDescription("Need a tool");
 
@@ -74,7 +74,7 @@ class RequestControllerTest {
     }
 
     @Test
-    void getUserRequests_ShouldReturnOk() throws Exception {
+    void getUserRequestsReturnsOk() throws Exception {
         when(requestClient.getUserRequests(USER_ID)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/requests")
@@ -83,7 +83,7 @@ class RequestControllerTest {
     }
 
     @Test
-    void getAllRequests_ShouldReturnOk() throws Exception {
+    void getAllRequestsReturnsOk() throws Exception {
         when(requestClient.getAllRequests(USER_ID)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/requests/all")
@@ -92,7 +92,7 @@ class RequestControllerTest {
     }
 
     @Test
-    void getRequestById_ShouldReturnOk() throws Exception {
+    void getRequestByIdReturnsOk() throws Exception {
         when(requestClient.getRequestById(5L, USER_ID)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/requests/5")

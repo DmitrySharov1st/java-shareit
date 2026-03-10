@@ -35,7 +35,7 @@ class ItemRequestControllerTest {
     private static final Long USER_ID = 1L;
 
     @Test
-    void create_ShouldReturnDto() throws Exception {
+    void createValidRequestReturnsDto() throws Exception {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto();
         createDto.setDescription("Need a tool");
 
@@ -59,7 +59,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void getUserRequests_ShouldReturnList() throws Exception {
+    void getUserRequestsReturnsList() throws Exception {
         ItemRequestDto responseDto = ItemRequestDto.builder()
                 .id(1L)
                 .description("Request")
@@ -76,7 +76,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void getAllRequests_ShouldReturnList() throws Exception {
+    void getAllRequestsReturnsList() throws Exception {
         ItemRequestDto responseDto = ItemRequestDto.builder()
                 .id(2L)
                 .description("Request from another")
@@ -93,7 +93,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void getRequestById_ShouldReturnDto() throws Exception {
+    void getRequestByIdReturnsDto() throws Exception {
         ItemRequestDto responseDto = ItemRequestDto.builder()
                 .id(5L)
                 .description("Specific request")
@@ -109,18 +109,17 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.id").value(5L));
     }
 
-    // Проверка, что валидация не выполняется (отсутствие @Valid) – при пустом описании сервис получит dto с null
     @Test
-    void create_ShouldPassEvenIfDescriptionIsNull() throws Exception {
+    void createWithNullDescriptionPasses() throws Exception {
         ItemRequestCreateDto createDto = new ItemRequestCreateDto(); // description = null
 
         when(requestService.create(any(ItemRequestCreateDto.class), eq(USER_ID)))
-                .thenThrow(new RuntimeException("Service called with null description")); // чтобы убедиться, что вызов дошёл
+                .thenThrow(new RuntimeException("Service called with null description"));
 
         mockMvc.perform(post("/requests")
                         .header(USER_ID_HEADER, USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
-                .andExpect(status().isInternalServerError()); // контроллер без валидации, сервис выбросит ошибку
+                .andExpect(status().isInternalServerError());
     }
 }

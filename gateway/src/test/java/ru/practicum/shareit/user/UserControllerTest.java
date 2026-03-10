@@ -28,7 +28,7 @@ class UserControllerTest {
     private UserClient userClient;
 
     @Test
-    void create_ValidUser_ShouldReturnOk() throws Exception {
+    void createValidUserReturnsOk() throws Exception {
         UserDto userDto = new UserDto();
         userDto.setName("John");
         userDto.setEmail("john@test.com");
@@ -43,7 +43,7 @@ class UserControllerTest {
     }
 
     @Test
-    void create_InvalidEmail_ShouldReturnBadRequest() throws Exception {
+    void createInvalidEmailReturnsBadRequest() throws Exception {
         UserDto userDto = new UserDto();
         userDto.setName("John");
         userDto.setEmail("invalid");
@@ -55,7 +55,7 @@ class UserControllerTest {
     }
 
     @Test
-    void create_EmptyName_ShouldReturnBadRequest() throws Exception {
+    void createEmptyNameReturnsBadRequest() throws Exception {
         UserDto userDto = new UserDto();
         userDto.setName("");
         userDto.setEmail("john@test.com");
@@ -67,7 +67,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update_ValidData_ShouldReturnOk() throws Exception {
+    void updateValidDataReturnsOk() throws Exception {
         UserDto userDto = new UserDto();
         userDto.setName("Updated");
 
@@ -81,7 +81,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getById_ShouldReturnOk() throws Exception {
+    void getByIdReturnsOk() throws Exception {
         when(userClient.getById(1L)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/users/1"))
@@ -89,7 +89,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getAll_ShouldReturnOk() throws Exception {
+    void getAllReturnsOk() throws Exception {
         when(userClient.getAll()).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(get("/users"))
@@ -97,7 +97,7 @@ class UserControllerTest {
     }
 
     @Test
-    void delete_ShouldReturnOk() throws Exception {
+    void deleteReturnsOk() throws Exception {
         when(userClient.delete(1L)).thenReturn(ResponseEntity.ok().build());
 
         mockMvc.perform(delete("/users/1"))

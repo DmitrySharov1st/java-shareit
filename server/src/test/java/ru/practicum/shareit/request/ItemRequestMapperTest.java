@@ -19,7 +19,7 @@ class ItemRequestMapperTest {
     private final ItemRequestMapper mapper = new ItemRequestMapper();
 
     @Test
-    void toItemRequest_ShouldConvertCreateDtoToEntity() {
+    void toItemRequestConvertsCreateDtoToEntity() {
         User requestor = User.builder().id(1L).name("User").build();
         ItemRequestCreateDto createDto = new ItemRequestCreateDto();
         createDto.setDescription("Need item");
@@ -34,7 +34,7 @@ class ItemRequestMapperTest {
     }
 
     @Test
-    void toItemRequestDto_ShouldConvertEntityToDto() {
+    void toItemRequestDtoConvertsEntityToDto() {
         User requestor = User.builder().id(1L).name("User").build();
         ItemRequest request = ItemRequest.builder()
                 .id(10L)
@@ -66,7 +66,7 @@ class ItemRequestMapperTest {
     }
 
     @Test
-    void toItemRequestDto_ShouldHandleEmptyItems() {
+    void toItemRequestDtoHandlesEmptyItems() {
         User requestor = User.builder().id(1L).name("User").build();
         ItemRequest request = ItemRequest.builder()
                 .id(10L)
